@@ -98,7 +98,7 @@ dkms.conf
 # User-specific files
 *.rsuser
 *.suo
-*.sln
+##*.sln
 *.vcxproj
 *.vcxproj.filters
 *.ini
