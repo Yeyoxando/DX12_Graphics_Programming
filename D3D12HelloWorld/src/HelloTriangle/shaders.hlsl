@@ -42,7 +42,7 @@ PSInput VSMain(float4 position : POSITION, float4 color : COLOR)
     // Tau constant
     float kTau = kPi * 2.0f;
 
-    float x_radians = kTau / 6.0f;
+    float x_radians = 0.0f;//kTau / 6.0f;
 
     // Rotates in the X axis
     float4x4 rotateX = { 1.0f,            0.0f,           0.0f, 0.0f,
@@ -57,7 +57,7 @@ PSInput VSMain(float4 position : POSITION, float4 color : COLOR)
                          sin(y_radians), 0.0f,  cos(y_radians), 0.0f,
                                    0.0f, 0.0f,            0.0f, 1.0f };
 
-    float z_radians = kTau / 4.0f;
+    float z_radians = 0.0f;//kTau / 4.0f;
     // Rotates in the Z axis
     float4x4 rotateZ = {  cos(z_radians), sin(z_radians), 0.0f, 0.0f,
                          -sin(z_radians), cos(z_radians), 0.0f, 0.0f,
@@ -83,5 +83,41 @@ PSInput VSMain(float4 position : POSITION, float4 color : COLOR)
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
-    return input.color;
+    float4 final_color = input.color;
+
+    //Predefined colors
+    float4 red = { 1.0f, 0.0f, 0.0f, 1.0f };
+    float4 green = { 0.0f, 1.0f, 0.0f, 1.0f };
+    float4 blue = { 0.0f, 0.0f, 1.0f, 1.0f };
+
+    // Stripped triangle
+    // Untransformed triangle height goes from 300.0f to 600.0f on world-space, so each side height is 100.0f
+    /*
+    if (input.position.y < 400.0f) {
+        final_color = red;
+    }
+    if (input.position.y >= 400.0f && input.position.y <= 500.0f) {
+        final_color = green;
+    }
+    if (input.position.y > 500.0f) {
+        final_color = blue;
+    }
+    */
+    
+    // Top-Bottom smooth gradient
+    // Knowing that the untransformed triangle height goes from 300.0f to 600.0f we can calculate the lerp value on this way.
+    // Simulate that the triangle start is on 0.0f and divide the obtained value by its height
+    /*
+    float lerp_value = (input.position.y - 300.0f) / 300.0f;
+    final_color = lerp(red, blue, lerp_value);
+    */
+
+    // Centre-Edge smooth gradient
+    // Knowing that the untransformed triangle wide goes from 450.0f to 750.0f we can calculate the lerp value on this way.
+    // Simulate that the triangle x coordinate starts at 0.0f, then displace by its half-size, finally divide it by its half-size
+    // Last step is to obtain it's absolute value to obtain a correct lerp value for the negative side as well.
+    float lerp_value = abs(((input.position.x - 450.0f) - 150.0f) / 150.0f);
+    final_color = lerp(green, blue, lerp_value);
+
+    return final_color;
 }
