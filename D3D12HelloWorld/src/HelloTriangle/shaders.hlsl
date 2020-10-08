@@ -112,12 +112,22 @@ float4 PSMain(PSInput input) : SV_TARGET
     final_color = lerp(red, blue, lerp_value);
     */
 
-    // Centre-Edge smooth gradient
+    // Centre-Edge smooth gradient (Line)
     // Knowing that the untransformed triangle wide goes from 450.0f to 750.0f we can calculate the lerp value on this way.
     // Simulate that the triangle x coordinate starts at 0.0f, then displace by its half-size, finally divide it by its half-size
     // Last step is to obtain it's absolute value to obtain a correct lerp value for the negative side as well.
+    /*
     float lerp_value = abs(((input.position.x - 450.0f) - 150.0f) / 150.0f);
-    final_color = lerp(green, blue, lerp_value);
+    final_color = lerp(red, green, lerp_value);
+    */
+
+    // Centre-Edge smooth gradient (Dot)
+    // Knowing that the triangle center is at { 600.0f, 450.0f }, we can calculate the distance from the center to the current position
+    // We can also displace a bit the center of the dot to adjust it more to the center (+50.0f to y coordinate)
+    // Finally, we have to divide the obtained distance by the triangle half-size to normalize the value and use a value from 0.0f to 1.0f in lerp function
+    float2 center_position = { 600.0f, (450.0f + 50.0f)};
+    float pixel_to_center = distance(center_position, input.position.xy);
+    final_color = lerp(blue, green, (pixel_to_center / 150.0f));
 
     return final_color;
 }
