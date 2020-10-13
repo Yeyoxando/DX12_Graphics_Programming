@@ -11,8 +11,8 @@
 
 cbuffer SceneConstantBuffer : register(b0)
 {
-    float4 offset;
-    float4 padding[15];
+    float radians;
+    float padding[63];
 };
 
 struct PSInput
@@ -23,9 +23,14 @@ struct PSInput
 
 PSInput VSMain(float4 position : POSITION, float4 color : COLOR)
 {
+    // Rotates in the Z axis
+    float4x4 rotateZ = { cos(radians), sin(radians), 0.0f, 0.0f,
+                         -sin(radians), cos(radians), 0.0f, 0.0f,
+                                    0.0f,           0.0f, 1.0f, 0.0f,
+                                    0.0f,           0.0f, 0.0f, 1.0f };
     PSInput result;
 
-    result.position = position + offset;
+    result.position = mul(position, rotateZ);
     result.color = color;
 
     return result;

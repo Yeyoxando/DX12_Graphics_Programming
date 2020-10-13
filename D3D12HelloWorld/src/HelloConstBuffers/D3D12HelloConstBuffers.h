@@ -41,10 +41,15 @@ private:
         XMFLOAT4 color;
     };
 
-    struct SceneConstantBuffer
+    /*struct SceneConstantBuffer
     {
         XMFLOAT4 offset;
         float padding[60]; // Padding so the constant buffer is 256-byte aligned.
+    };*/
+    struct SceneConstantBuffer
+    {
+        float radians;
+        float padding[63]; // Padding so the constant buffer is 256-byte aligned.
     };
     static_assert((sizeof(SceneConstantBuffer) % 256) == 0, "Constant Buffer size must be 256-byte aligned");
 
