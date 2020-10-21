@@ -105,8 +105,12 @@ float4 PS(VertexOut pin) : SV_Target
     const float shininess = 1.0f - gRoughness;
     Material mat = { gDiffuseAlbedo, gFresnelR0, shininess };
     float3 shadowFactor = 1.0f;
+    // Original
+    //float4 directLight = ComputeLighting(gLights, mat, pin.PosW,
+    //    pin.NormalW, toEyeW, shadowFactor);
+    // Exercise 1
     float4 directLight = ComputeLighting(gLights, mat, pin.PosW, 
-        pin.NormalW, toEyeW, shadowFactor);
+        pin.NormalW, toEyeW, shadowFactor) * sin(gTotalTime);
 
     float4 litColor = ambient + directLight;
 
