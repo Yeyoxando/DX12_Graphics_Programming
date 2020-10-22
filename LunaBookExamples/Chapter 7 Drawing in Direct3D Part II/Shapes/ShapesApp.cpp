@@ -444,30 +444,23 @@ void ShapesApp::UpdateMainPassCB(const GameTimer& gt)
 	mMainPassCB.TotalTime = gt.TotalTime();
 	mMainPassCB.DeltaTime = gt.DeltaTime();
 
-	// Added for exercise 3(-5.0f, 3.5f, -10.0f + i*5.0f);
 	mMainPassCB.AmbientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
-	mMainPassCB.Lights[0].Position = { -5.0f, 5.0f, -10.0f };
-	//mMainPassCB.Lights[0].FalloffEnd = 5.0f; // Not needed because it was initialized by default
-	//mMainPassCB.Lights[0].FalloffStart = 2.0f;
-	mMainPassCB.Lights[0].Strength = { 0.6f, 0.6f, 0.6f };
-	mMainPassCB.Lights[1].Position = { -5.0f, 5.0f, -5.0f };
-	mMainPassCB.Lights[1].Strength = { 0.6f, 0.6f, 0.6f };
-	mMainPassCB.Lights[2].Position = { -5.0f, 5.0f, -0.0f };
-	mMainPassCB.Lights[2].Strength = { 0.6f, 0.6f, 0.6f };
-	mMainPassCB.Lights[3].Position = { -5.0f, 5.0f, 5.0f };
-	mMainPassCB.Lights[3].Strength = { 0.6f, 0.6f, 0.6f };
-	mMainPassCB.Lights[4].Position = { -5.0f, 5.0f, 10.0f };
-	mMainPassCB.Lights[4].Strength = { 0.6f, 0.6f, 0.6f };
-	mMainPassCB.Lights[5].Position = { 5.0f, 5.0f, -10.0f };
-	mMainPassCB.Lights[5].Strength = { 0.6f, 0.6f, 0.6f };
-	mMainPassCB.Lights[6].Position = { 5.0f, 5.0f, -5.0f };
-	mMainPassCB.Lights[6].Strength = { 0.6f, 0.6f, 0.6f };
-	mMainPassCB.Lights[7].Position = { 5.0f, 5.0f, 0.0f };
-	mMainPassCB.Lights[7].Strength = { 0.6f, 0.6f, 0.6f };
-	mMainPassCB.Lights[8].Position = { 5.0f, 5.0f, 5.0f };
-	mMainPassCB.Lights[8].Strength = { 0.6f, 0.6f, 0.6f };
-	mMainPassCB.Lights[9].Position = { 5.0f, 5.0f, 10.0f };
-	mMainPassCB.Lights[9].Strength = { 0.6f, 0.6f, 0.6f };
+	// Added for exercise 3(-5.0f, 3.5f, -10.0f + i*5.0f);
+	for (int i = 0; i < 5; ++i) {
+		mMainPassCB.Lights[0 + (i * 2)].Position = { -5.0f, 5.0f, -10.0f + i * 5.0f };
+		mMainPassCB.Lights[0 + (i * 2)].SpotPower = 16.0f;
+		mMainPassCB.Lights[0 + (i * 2)].FalloffStart = 9.0f;
+		mMainPassCB.Lights[0 + (i * 2)].FalloffEnd = 10.0f;
+		mMainPassCB.Lights[0 + (i * 2)].Direction = { 0.0f, -1.0f, 0.0f };
+		mMainPassCB.Lights[0 + (i * 2)].Strength = { 0.7f, 0.7f, 0.7f };
+
+		mMainPassCB.Lights[1 + (i * 2)].Position = { 5.0f, 5.0f, -10.0f + i * 5.0f };
+		mMainPassCB.Lights[1 + (i * 2)].SpotPower = 16.0f;
+		mMainPassCB.Lights[1 + (i * 2)].FalloffStart = 9.0f;
+		mMainPassCB.Lights[1 + (i * 2)].FalloffEnd = 10.0f;
+		mMainPassCB.Lights[1 + (i * 2)].Direction = { 0.0f, -1.0f, 0.0f };
+		mMainPassCB.Lights[1 + (i * 2)].Strength = { 0.7f, 0.7f, 0.7f };
+	}
 
 
 	auto currPassCB = mCurrFrameResource->PassCB.get();
