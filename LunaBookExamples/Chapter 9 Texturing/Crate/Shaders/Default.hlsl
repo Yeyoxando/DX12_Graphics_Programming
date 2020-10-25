@@ -122,8 +122,21 @@ float4 PS(VertexOut pin) : SV_Target
     //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinearMirror, pin.TexC * 3.0f) * gDiffuseAlbedo; // Figure 9.13 (Mirror)
 
     // Exercise 3
-    float4 diffuseAlbedo = gTextures[0].Sample(gsamLinearWrap, pin.TexC) * gDiffuseAlbedo;
-    float4 alpha = gTextures[1].Sample(gsamLinearWrap, pin.TexC);
+    //float4 diffuseAlbedo = gTextures[0].Sample(gsamLinearWrap, pin.TexC) * gDiffuseAlbedo;
+    //float4 alpha = gTextures[1].Sample(gsamLinearWrap, pin.TexC);
+    //diffuseAlbedo = diffuseAlbedo * alpha;
+
+    // Exercise 4
+    //2d rotation matrix
+    float2x2 rotMatrix2D = { cos(gTotalTime), -sin(gTotalTime),
+                             sin(gTotalTime), cos(gTotalTime)};
+    float2x2 rotMatrix2DB = { cos(-gTotalTime * 0.2f), -sin(-gTotalTime * 0.2f),
+                             sin(-gTotalTime * 0.2f), cos(-gTotalTime * 0.2f)};
+
+    float2 finalCoord = mul(pin.TexC - 0.5f, rotMatrix2D) + 0.5f;
+    float2 finalCoordB = mul(pin.TexC - 0.5f, rotMatrix2DB) + 0.5f;
+    float4 diffuseAlbedo = gTextures[0].Sample(gsamLinearWrap, finalCoord) * gDiffuseAlbedo;
+    float4 alpha = gTextures[1].Sample(gsamLinearBorderColor, finalCoordB);
     diffuseAlbedo = diffuseAlbedo * alpha;
 
     // Interpolating normal can unnormalize it, so renormalize it.
