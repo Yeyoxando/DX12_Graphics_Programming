@@ -21,7 +21,15 @@
 #include "LightingUtil.hlsl"
 
 Texture2D    gDiffuseMap : register(t0);
-SamplerState gsamLinear  : register(s0);
+SamplerState gsamPointWrap : register(s0);
+SamplerState gsamPointClamp : register(s1);
+SamplerState gsamLinearWrap : register(s2);
+SamplerState gsamLinearClamp : register(s3);
+SamplerState gsamAnisotropicWrap : register(s4);
+SamplerState gsamAnisotropicClamp : register(s5);
+SamplerState gsamLinearBorderColor : register(s6);
+SamplerState gsamLinearMirror : register(s7);
+
 
 
 // Constant data that varies per frame.
@@ -103,7 +111,13 @@ VertexOut VS(VertexIn vin)
 
 float4 PS(VertexOut pin) : SV_Target
 {
-    float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinear, pin.TexC) * gDiffuseAlbedo;
+
+    //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamPointWrap, pin.TexC * 0.1f) * gDiffuseAlbedo; // Figure 9.7 (Upscaled to see correctly working)
+    //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamAnisotropicWrap, pin.TexC) * gDiffuseAlbedo; // Figure 9.9 (Top face has a better view)
+    //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinearWrap, pin.TexC * 3.0f) * gDiffuseAlbedo; // Figure 9.10 (Repeating texture)
+    //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinearBorderColor, pin.TexC * 3.0f) * gDiffuseAlbedo; // Figure 9.11 (Border color)
+    //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinearClamp, pin.TexC * 3.0f) * gDiffuseAlbedo; // Figure 9.12 (Clamp)
+    float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinearMirror, pin.TexC * 3.0f) * gDiffuseAlbedo; // Figure 9.13 (Mirror)
 
     // Interpolating normal can unnormalize it, so renormalize it.
     pin.NormalW = normalize(pin.NormalW);

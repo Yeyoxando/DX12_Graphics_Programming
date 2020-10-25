@@ -88,7 +88,7 @@ private:
     void BuildRenderItems();
     void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
 
-	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> GetStaticSamplers();
+	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 8> GetStaticSamplers();
 
 private:
 
@@ -694,7 +694,7 @@ void CrateApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::ve
     }
 }
 
-std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> CrateApp::GetStaticSamplers()
+std::array<const CD3DX12_STATIC_SAMPLER_DESC, 8> CrateApp::GetStaticSamplers()
 {
 	// Applications usually only need a handful of samplers.  So just define them all up front
 	// and keep them available as part of the root signature.  
@@ -745,9 +745,30 @@ std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> CrateApp::GetStaticSamplers()
 		0.0f,                              // mipLODBias
 		8);                                // maxAnisotropy
 
+	// Added for exercise 1 (9.11)
+	const CD3DX12_STATIC_SAMPLER_DESC bColorLinear(
+		6, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_LINEAR, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_BORDER,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_BORDER,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_BORDER,  // addressW
+		0.0f,                               // mipLODBias
+		16,								    // maxAnisotropy
+		D3D12_COMPARISON_FUNC_LESS_EQUAL,   // compfunc (Default)
+		D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK);   // Border color       
+
+	// Added for exercise 1 (9.13)
+	const CD3DX12_STATIC_SAMPLER_DESC bLinearMirror(
+		7, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_LINEAR, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_MIRROR,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_MIRROR,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_MIRROR); // addressW                         
+
 	return { 
 		pointWrap, pointClamp,
 		linearWrap, linearClamp, 
-		anisotropicWrap, anisotropicClamp };
+		anisotropicWrap, anisotropicClamp, 
+		bColorLinear, bLinearMirror };
 }
 
