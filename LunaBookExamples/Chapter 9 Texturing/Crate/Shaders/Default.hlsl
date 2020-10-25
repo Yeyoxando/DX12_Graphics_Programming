@@ -20,7 +20,9 @@
 // Include structures and functions for lighting.
 #include "LightingUtil.hlsl"
 
-Texture2D    gDiffuseMap : register(t0);
+//Texture2D    gDiffuseMap : register(t0);
+Texture2D    gTextures[2] : register(t0);
+
 SamplerState gsamPointWrap : register(s0);
 SamplerState gsamPointClamp : register(s1);
 SamplerState gsamLinearWrap : register(s2);
@@ -117,7 +119,12 @@ float4 PS(VertexOut pin) : SV_Target
     //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinearWrap, pin.TexC * 3.0f) * gDiffuseAlbedo; // Figure 9.10 (Repeating texture)
     //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinearBorderColor, pin.TexC * 3.0f) * gDiffuseAlbedo; // Figure 9.11 (Border color)
     //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinearClamp, pin.TexC * 3.0f) * gDiffuseAlbedo; // Figure 9.12 (Clamp)
-    float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinearMirror, pin.TexC * 3.0f) * gDiffuseAlbedo; // Figure 9.13 (Mirror)
+    //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinearMirror, pin.TexC * 3.0f) * gDiffuseAlbedo; // Figure 9.13 (Mirror)
+
+    // Exercise 3
+    float4 diffuseAlbedo = gTextures[0].Sample(gsamLinearWrap, pin.TexC) * gDiffuseAlbedo;
+    float4 alpha = gTextures[1].Sample(gsamLinearWrap, pin.TexC);
+    diffuseAlbedo = diffuseAlbedo * alpha;
 
     // Interpolating normal can unnormalize it, so renormalize it.
     pin.NormalW = normalize(pin.NormalW);

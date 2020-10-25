@@ -480,7 +480,7 @@ void TexColumnsApp::BuildRootSignature()
 	CD3DX12_DESCRIPTOR_RANGE texTable;
 	texTable.Init(
         D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 
-        1,  // number of descriptors
+        2,  // number of descriptors
         0); // register t0
 
     // Root parameter can be a table, root descriptor or root constants.

@@ -449,6 +449,7 @@ void CrateApp::UpdateMainPassCB(const GameTimer& gt)
 
 void CrateApp::LoadTextures()
 {
+	/*
 	auto woodCrateTex = std::make_unique<Texture>();
 	woodCrateTex->Name = "woodCrateTex";
 	woodCrateTex->Filename = L"../../Textures/WoodCrate01.dds";
@@ -456,13 +457,32 @@ void CrateApp::LoadTextures()
 		mCommandList.Get(), woodCrateTex->Filename.c_str(),
 		woodCrateTex->Resource, woodCrateTex->UploadHeap));
  
-	mTextures[woodCrateTex->Name] = std::move(woodCrateTex);
+	mTextures[woodCrateTex->Name] = std::move(woodCrateTex);*/
+
+	// Exercise 3
+	auto flareTex = std::make_unique<Texture>();
+	flareTex->Name = "flareTex";
+	flareTex->Filename = L"../../Textures/flare.dds";
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
+		mCommandList.Get(), flareTex->Filename.c_str(),
+		flareTex->Resource, flareTex->UploadHeap));
+
+	mTextures[flareTex->Name] = std::move(flareTex);
+
+	auto flareAlphaTex = std::make_unique<Texture>();
+	flareAlphaTex->Name = "flareAlphaTex";
+	flareAlphaTex->Filename = L"../../Textures/flarealpha.dds";
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
+		mCommandList.Get(), flareAlphaTex->Filename.c_str(),
+		flareAlphaTex->Resource, flareAlphaTex->UploadHeap));
+
+	mTextures[flareAlphaTex->Name] = std::move(flareAlphaTex);
 }
 
 void CrateApp::BuildRootSignature()
 {
 	CD3DX12_DESCRIPTOR_RANGE texTable;
-	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0);
 
     // Root parameter can be a table, root descriptor or root constants.
     CD3DX12_ROOT_PARAMETER slotRootParameter[4];
@@ -505,7 +525,7 @@ void CrateApp::BuildDescriptorHeaps()
 	// Create the SRV heap.
 	//
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-	srvHeapDesc.NumDescriptors = 1;
+	srvHeapDesc.NumDescriptors = 2;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
@@ -514,9 +534,31 @@ void CrateApp::BuildDescriptorHeaps()
 	// Fill out the heap with actual descriptors.
 	//
 	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	std::vector<ComPtr<ID3D12Resource>> tex2DList =
+	{
+		mTextures["flareTex"]->Resource,
+		mTextures["flareAlphaTex"]->Resource
+	};
 
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+	for (UINT i = 0; i < (UINT)tex2DList.size(); ++i)
+	{
+		srvDesc.Format = tex2DList[i]->GetDesc().Format;
+		srvDesc.Texture2D.MipLevels = tex2DList[i]->GetDesc().MipLevels;
+		md3dDevice->CreateShaderResourceView(tex2DList[i].Get(), &srvDesc, hDescriptor);
+
+		// next descriptor
+		hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+	}
+
+ /*
 	auto woodCrateTex = mTextures["woodCrateTex"]->Resource;
- 
+
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.Format = woodCrateTex->GetDesc().Format;
@@ -525,7 +567,8 @@ void CrateApp::BuildDescriptorHeaps()
 	srvDesc.Texture2D.MipLevels = woodCrateTex->GetDesc().MipLevels;
 	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 
-	md3dDevice->CreateShaderResourceView(woodCrateTex.Get(), &srvDesc, hDescriptor);
+	md3dDevice->CreateShaderResourceView(woodCrateTex.Get(), &srvDesc, hDescriptor);*/
+
 }
 
 void CrateApp::BuildShadersAndInputLayout()
