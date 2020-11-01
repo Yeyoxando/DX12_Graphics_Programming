@@ -1,0 +1,109 @@
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+TEXTURES (FINISHED)
+. Show developed examples
+	. Standard texture mapping
+		. In this video I'm going to explain how to use textures in DirectX 12 and show different examples of it's use, this is an standard use of textures
+	. Tiled texture mapping
+		. Here we have a tiled texture, where we repeat this texture, this could be useful for using only 1 texture on big objects
+		  like a wall of bricks or a terrain 
+	. Shader using multiple textures 
+		. We can also use different textures on the same shader and animate them to achieve an effect like this fireball
+
+. Walkthrough on the C++ code
+	. (Line 180)First thing that we need to do is load the textures that we are going to use on the initialize method of the app
+	. (Line 450)In this case we are going to use the CreateDDSTextureFromFile12 method from Frank Luna's samples
+	. This function will need a pointer to the device, a pointer to the command list, the filename of the texture,
+	  and also the texture resource and the uploadHeap to fill them internally. If we aren't using that function, we will need 
+	  to create a resource descriptor with the texture parameters, create a committed resource for the texture and a commited resource
+	  for the texture upload heap, in this case all of that things will be done internally with this method
+	. (Line 462) Now we need to create the root signature for the shader that we are going to use
+	. We create a descriptor range and initialize with the DESCRIPTOR_RANGE_TYPE_SRV, the number of textures on this table
+	  and the base shader register where is going to be set
+	. (Line 471) Then we initialize the descriptor table with the number of descriptor ranges, the table itself and the shader visibility
+	. And we inilitalize the other root parameters that the shader needs
+	. Next thing that we need is the sampler or samplers for the textures
+	. (Line 697)We can create an array of them to use different ones in a shader
+	. Those samplers will indicate the way that the texture should behave with
+	  magnifcation, minification and the adress mode on its coordinates
+	. (Line 491) Back in the creation of the root signature, we get those samplers and we create a root Signature descriptor, filling
+	  it with the number of parameters, the parameters, the size of samplers, the samplers and the flags
+	. Then we serialize it and create it to use it later (stored on m_rootSignature)
+	. (Line 502) Now we need to build the descriptor heaps for the textures
+	. So we create a descriptor heap description, fill it with the needed parameters and call the CreateDEscriptorHeap method
+	. (Line 516) We have to create a CPU_DESCRIPTOR_HANDLE also, and we do it like this
+	. (Line 520-526) Then, for each texture on the descriptor heap we need to create a Shader Resource View, so we have to fill a 
+	  Shader Resource View Description with these parameters
+	. And we call the CreateShaderResourceView method with the texture resource, the shader resource viewdescription and the cpu
+	  descriptor handle for each texture
+	. (Line 540) One of the most important things for using textures, is to have the model uvs, so we need to add them on the input layout of the shaders
+	. So when we create a geometry or load a model we need to store these values on the Vertex structure and upload them to the vertex buffer	
+	. (Line 261) Finally, In the draw method we need to set the descriptor heaps for the textures, so we get them and call the SetDescriptorHeaps method
+	. In the draw render items method, we need to set the current texture for each item, so we could use the same shader with different textures by object
+	. (Line 683) So we get the gpu descriptor handle of the texture 
+	. (Line 689) and set it for the shader calling the SetGraphicsRootDescriptorTable with the index of the root parameter and the gpu descriptor handle
+	
+	. As an extra appointment, if we need to use multiple textures on a shader, we can use a texture array
+	. (Put the line) So we can modify the texture shader resource view with more than one texture
+	. (Put the line) And creating the descriptr heap we can use a loop changing the current texture and using the Offset method to set them 
+
+. Process to use a texture on HLSL
+	. The last step is to use it on the shader calling the texture function 'Sample', with the g_sampler and model uvs.
+		. This will return a vector of 4 components, that in this case are going to be the rgba channels
+	. Show texture tiling functionality
+		. We can tile a texture by multipliying its uvs
+	. Show shader using multiple textures (Texture blending)
+		. We can transform the object uvs like any other point with a 2d matrix
+		. And combining them adding, substracting or multiplying its components like in this case
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BLENDING (Not finished, need to check Frank Luna sample project and made blending exercises)
+. Show developed examples
+	. Transparency
+	. Alpha testing (clipping)
+	. Fog
+
+. Technique explanation
+	. By blending objects we can combine the color of the source pixel, which are the ones we are rasterizing
+	  with previous rendered ones, which are the destination pixels
+	. Order objects and render first opaque ones, then render transparent objects from back to front
+	. Clip function discards pixel from being processed, and this dosent require the objects to be sort (Alpha testing)
+	  this function can only be called on pixel shader
+	. Explain fog technique
+
+. Walktrough on the code
+	. The RGB and alpha channels are blended separetely, and the blending function could be set with D3D12_BLEND_OP
+	. Create transparent blend state to allow blending operations on program initialization
+	. We could have different PSOs and change them as needed with SetPipelineState method
+	.
+
+. Walktrough on the shader
+	. 
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+STENCILING (Not finished, need to check Frank Luna sample project, finish chapter 11 reading and made stenciling exercises)
+. Show developed examples
+	. Planar reflections
+	. Planar shadows
+
+. Technique explanation
+	. Stencil buffer is another off-screen buffer as the depth-buffer, it allow us to block the rendering of some pixels in the screen
+	  as on the mirror, where we allow the rendering only on it.
+	.
+
+. Walktrough on the code
+	. To use the stencil buffer we have to configure it by filling a D3D12_DEPTH_STENCIL_STATE and assign it to
+	  the DepthStencilState of the PSO
+	. As the Stencil buffer is a texture we have to create it with an specific format, such as DXGI_FORMAT_D24_UNORM_S8_UINT, where we have 24 bits 
+	  for the depth buffer and 8 for the stencil
+	. So we set this when we were to create the depth buffer
+	. The stencil buffer should be resetted at the beginning of each frame, like the depth, so we do it at the same time using the 
+	  ClearDepthStencilView method and setting the flags to do it
+	. 
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
