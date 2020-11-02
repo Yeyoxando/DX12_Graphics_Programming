@@ -989,6 +989,7 @@ void StencilApp::BuildPSOs()
 	reflectionsDSS.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	reflectionsDSS.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
 	reflectionsDSS.StencilEnable = true;
+	//reflectionsDSS.StencilEnable = false; Exercise 3
 	reflectionsDSS.StencilReadMask = 0xff;
 	reflectionsDSS.StencilWriteMask = 0xff;
 
@@ -1019,6 +1020,7 @@ void StencilApp::BuildPSOs()
 	shadowDSS.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	shadowDSS.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
 	shadowDSS.StencilEnable = true;
+	//shadowDSS.StencilEnable = false; // Exercise 4
 	shadowDSS.StencilReadMask = 0xff;
 	shadowDSS.StencilWriteMask = 0xff;
 
