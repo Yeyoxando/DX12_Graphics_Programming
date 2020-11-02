@@ -564,7 +564,7 @@ void BlendApp::LoadTextures()
 
 	auto fenceTex = std::make_unique<Texture>();
 	fenceTex->Name = "fenceTex";
-	fenceTex->Filename = L"../../Textures/WireFence.dds";
+	fenceTex->Filename = L"../../Textures/bolt_anim/Bolt002.dds";
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
 		mCommandList.Get(), fenceTex->Filename.c_str(),
 		fenceTex->Resource, fenceTex->UploadHeap));
@@ -797,7 +797,8 @@ void BlendApp::BuildWavesGeometry()
 void BlendApp::BuildBoxGeometry()
 {
 	GeometryGenerator geoGen;
-	GeometryGenerator::MeshData box = geoGen.CreateBox(8.0f, 8.0f, 8.0f, 3);
+	//GeometryGenerator::MeshData box = geoGen.CreateBox(8.0f, 8.0f, 8.0f, 3);
+	GeometryGenerator::MeshData box = geoGen.CreateCylinder(8.0f, 8.0f, 12.0f, 16, 1, false);
 
 	std::vector<Vertex> vertices(box.Vertices.size());
 	for (size_t i = 0; i < box.Vertices.size(); ++i)
@@ -894,6 +895,7 @@ void BlendApp::BuildPSOs()
 	transparencyBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	//transparencyBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_BLUE | D3D12_COLOR_WRITE_ENABLE_ALPHA; Ex 5
 
+	transparentPsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 	transparentPsoDesc.BlendState.RenderTarget[0] = transparencyBlendDesc;
 	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&transparentPsoDesc, IID_PPV_ARGS(&mPSOs["transparent"])));
 
@@ -993,7 +995,7 @@ void BlendApp::BuildRenderItems()
 	boxRitem->StartIndexLocation = boxRitem->Geo->DrawArgs["box"].StartIndexLocation;
 	boxRitem->BaseVertexLocation = boxRitem->Geo->DrawArgs["box"].BaseVertexLocation;
 
-	mRitemLayer[(int)RenderLayer::AlphaTested].push_back(boxRitem.get());
+	mRitemLayer[(int)RenderLayer::Transparent].push_back(boxRitem.get());
 
     mAllRitems.push_back(std::move(wavesRitem));
     mAllRitems.push_back(std::move(gridRitem));

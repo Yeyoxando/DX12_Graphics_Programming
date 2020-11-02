@@ -97,7 +97,7 @@ public:
 	/// The bottom and top radius can vary to form various cone shapes rather than true
 	// cylinders.  The slices and stacks parameters control the degree of tessellation.
 	///</summary>
-    MeshData CreateCylinder(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount);
+    MeshData CreateCylinder(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount, bool caps);
 
 	///<summary>
 	/// Creates an mxn grid in the xz-plane with m rows and n columns, centered
