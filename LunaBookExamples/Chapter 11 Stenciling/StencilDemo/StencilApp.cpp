@@ -124,7 +124,9 @@ private:
 
 	// Cache render items of interest.
 	RenderItem* mSkullRitem = nullptr;
+	RenderItem* mFloorRitem = nullptr;
 	RenderItem* mReflectedSkullRitem = nullptr;
+	RenderItem* mReflectedFloorRitem = nullptr;
 	RenderItem* mShadowedSkullRitem = nullptr;
 
 	// List of all the render items.
@@ -410,7 +412,7 @@ void StencilApp::OnKeyboardInput(const GameTimer& gt)
 	XMMATRIX skullWorld = skullRotate*skullScale*skullOffset;
 	XMStoreFloat4x4(&mSkullRitem->World, skullWorld);
 
-	// Update reflection world matrix.
+	// Update skull reflection world matrix.
 	XMVECTOR mirrorPlane = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f); // xy plane
 	XMMATRIX R = XMMatrixReflect(mirrorPlane);
 	XMStoreFloat4x4(&mReflectedSkullRitem->World, skullWorld * R);
@@ -421,6 +423,10 @@ void StencilApp::OnKeyboardInput(const GameTimer& gt)
 	XMMATRIX S = XMMatrixShadow(shadowPlane, toMainLight);
 	XMMATRIX shadowOffsetY = XMMatrixTranslation(0.0f, 0.001f, 0.0f);
 	XMStoreFloat4x4(&mShadowedSkullRitem->World, skullWorld * S * shadowOffsetY);
+
+	// Update floor reflection world matrix.
+	XMMATRIX floorWorldReflected = XMMATRIX(*mFloorRitem->World.m) * R;
+	XMStoreFloat4x4(&mReflectedFloorRitem->World, floorWorldReflected);
 
 	mSkullRitem->NumFramesDirty = gNumFrameResources;
 	mReflectedSkullRitem->NumFramesDirty = gNumFrameResources;
@@ -1112,6 +1118,7 @@ void StencilApp::BuildRenderItems()
 	floorRitem->IndexCount = floorRitem->Geo->DrawArgs["floor"].IndexCount;
 	floorRitem->StartIndexLocation = floorRitem->Geo->DrawArgs["floor"].StartIndexLocation;
 	floorRitem->BaseVertexLocation = floorRitem->Geo->DrawArgs["floor"].BaseVertexLocation;
+	mFloorRitem = floorRitem.get();
 	mRitemLayer[(int)RenderLayer::Opaque].push_back(floorRitem.get());
 
     auto wallsRitem = std::make_unique<RenderItem>();
@@ -1167,12 +1174,20 @@ void StencilApp::BuildRenderItems()
 	mRitemLayer[(int)RenderLayer::Mirrors].push_back(mirrorRitem.get());
 	mRitemLayer[(int)RenderLayer::Transparent].push_back(mirrorRitem.get());
 
+	// Reflected floor will have different world matrix, so it needs to be its own render item.
+	auto reflectedFloorRitem = std::make_unique<RenderItem>();
+	*reflectedFloorRitem = *floorRitem;
+	reflectedFloorRitem->ObjCBIndex = 6;
+	mReflectedFloorRitem = reflectedFloorRitem.get();
+	mRitemLayer[(int)RenderLayer::Reflected].push_back(reflectedFloorRitem.get());
+
 	mAllRitems.push_back(std::move(floorRitem));
 	mAllRitems.push_back(std::move(wallsRitem));
 	mAllRitems.push_back(std::move(skullRitem));
 	mAllRitems.push_back(std::move(reflectedSkullRitem));
 	mAllRitems.push_back(std::move(shadowedSkullRitem));
 	mAllRitems.push_back(std::move(mirrorRitem));
+	mAllRitems.push_back(std::move(reflectedFloorRitem));
 }
 
 void StencilApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
