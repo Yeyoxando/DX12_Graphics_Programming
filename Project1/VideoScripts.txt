@@ -59,43 +59,75 @@ TEXTURES (FINISHED)
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-BLENDING (Not finished, need to check Frank Luna sample project and made blending exercises)
+BLENDING (FINISHED)
 . Show developed examples
 	. Transparency
+		. In this video we are going to show some blending techniques, such as the transparency shown in this water, where we are	
+		drawing a percentage of the water color over the grass color. This is useful for objects like water or glass
 	. Alpha testing (clipping)
+		. Other technique is the alpha testing that, which we can see in this box, where we are rendering only the pixels that 
+		are visible and discarding the render of the ones that are not opaque, this is useful for objects like fences
 	. Fog
-
-. Technique explanation
-	. By blending objects we can combine the color of the source pixel, which are the ones we are rasterizing
-	  with previous rendered ones, which are the destination pixels
-	. Order objects and render first opaque ones, then render transparent objects from back to front
-	. Clip function discards pixel from being processed, and this dosent require the objects to be sort (Alpha testing)
-	  this function can only be called on pixel shader
-	. Explain fog technique
+		. And the fog technique, where we blend the original color of the pixels with the fog color based on the distance to the 
+		camera, where we have a point in the distance where the fog starts, and the intensity of the fog increases with the 
+		distance until the color is completely the color of the fog. We can use this effect to hide popping errors or to simulate
+		weather effects
 
 . Walktrough on the code
-	. The RGB and alpha channels are blended separetely, and the blending function could be set with D3D12_BLEND_OP
-	. Create transparent blend state to allow blending operations on program initialization
-	. We could have different PSOs and change them as needed with SetPipelineState method
-	.
+	. By blending objects we can combine the color of the source pixels, which are the ones we are rasterizing currently,
+	  with previous rendered ones, which are the destination pixels
+	. In order to do this, we need to create different PSOs to change the pipeline state depending on the object that we are going to draw
+	. (Line 840) First we create the opaque one, that is the standard one to draw opaque objects.
+	. (Line 870) Then we create the transparent PSO, where we have to set all the parameters needed for the blending.
+	. The RGB and alpha channels are blended separetely,
+	. (Line 874) such as enable the blending
+	. (Line 876 - 877) set the blend factors for source and destination pixels
+	. (Line 878) and set the blend operation
+	. (Line 879 - 881) and the same for the alpha components
+	. Finally, we create another PSO for the alpha tested objects.
+	. (Line 892) that is the same as the opaque PSO, because with this state we render a pixel as opaque or we discard it directly
+	. (Line 898) the only thing that we need to change is rasterizer state cull mode to none
+	. (Line 291) Finally, we need to order the objects and render the opaque ones first, then alpha tested and then render transparent 
+	objects from back to front
+	. To do this, we can change the PSOs as needed with SetPipelineState method
 
 . Walktrough on the shader
-	. 
-
+	. Alpha is interpreted as a percentage of the color, so in the case of the water material whare alpha has been set to 0.5, 
+	the result will be that we draw a 50% of the water color in the destination pixel
+	. Clip function discard pixels from being processed, and this doesnt require the objects to be sort as they are interpreted to be opaque
+	  , this function can only be called on pixel shader
+	. (Shader 61 - 63)To use the fog, we will need some parameters, which they are these ones 
+	. The fog color will determine the color of the fog
+	. The fog start will determine at which distance the fog will start to blend with the destination pixels
+	. And the fog range will determine the increase of the fog blending until it reach a distance where the color is 100% the color of the fog
+	. (Shader 150) Then, if fog is enabled, we compute the value of the fog from 0 to 1, using the fog parameters
+	. We compute the distance of the current rendering pixel to the position of the camera to substract the fog start value to it,
+	so we start the fog from an specific distance, then we divide it by the fog range value
+	. The saturate function will clamp the value from 0 to 1 to use later on the lerp function, mixing the original color with the 
+	computed fog amount.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 STENCILING (Not finished, need to check Frank Luna sample project, finish chapter 11 reading and made stenciling exercises)
-. Show developed examples
+. Show developed examples and technique explanation ???
 	. Planar reflections
+		. In this video we are going to talk about some stenciling techniques, such as planar reflections, that are the ones that
+		we can see on  a mirror like this one, or in a plane floor made of marble or some other material with reflections.
+
+		. To allow this to work we will need to render the reflected geometries that we want to reflect in the mirror, the skull in
+		this case, and the same with the light source, and then we will need to draw in the stencil buffer the mirror surface, 
+		so the reflected skull will only be drawn where the stencil buffer has an specific value.
 	. Planar shadows
+		. Other technique that we can show that uses stenciling are planar shadows like this one, allowing us to correctly project 
+		the shadow of an object in a plane surface.
 
-. Technique explanation
-	. Stencil buffer is another off-screen buffer as the depth-buffer, it allow us to block the rendering of some pixels in the screen
-	  as on the mirror, where we allow the rendering only on it.
-	.
+		. The stencil buffer is not used to actually cast the shadow, this is another topic that is covered using geometric approaches
+		such as shadow matrixes, that projects the current 3d geometry triangles in to a flattened 2d surface. Although, some of that 
+		projected triangles will be overlapping and some shadow areas will be darker than others, so to prevent that error called 
+		'double blending', we use the stencil buffer to set the areas that has been currently rendered unable to render again, so
+		the complete surface of the shadow will be of the same colour.
 
-. Walktrough on the code
+. Walktrough on the code ???
 	. To use the stencil buffer we have to configure it by filling a D3D12_DEPTH_STENCIL_STATE and assign it to
 	  the DepthStencilState of the PSO
 	. As the Stencil buffer is a texture we have to create it with an specific format, such as DXGI_FORMAT_D24_UNORM_S8_UINT, where we have 24 bits 
@@ -103,7 +135,13 @@ STENCILING (Not finished, need to check Frank Luna sample project, finish chapte
 	. So we set this when we were to create the depth buffer
 	. The stencil buffer should be resetted at the beginning of each frame, like the depth, so we do it at the same time using the 
 	  ClearDepthStencilView method and setting the flags to do it
-	. 
+	. Stencil test ???
+	. Describe Depth and stencil buffer by filling a D3D12_DEPTH_STENCIL_DESC
+	. First we set the depth parameters
+	. And later we set the stencil parameters
+	. When the D3D12_DEPTH_STENCIL_DESC is complete we need to assign it to a PSO on  the DepthStencilState field
+	. Set stencil reference value ???
 
+. Walktrough on the shader ???
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
