@@ -919,6 +919,7 @@ void StencilApp::BuildPSOs()
 	opaquePsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	opaquePsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	opaquePsoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	//opaquePsoDesc.DepthStencilState.DepthEnable = false; // Exercise 5
 	opaquePsoDesc.SampleMask = UINT_MAX;
 	opaquePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	opaquePsoDesc.NumRenderTargets = 1;
@@ -989,7 +990,7 @@ void StencilApp::BuildPSOs()
 	reflectionsDSS.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	reflectionsDSS.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
 	reflectionsDSS.StencilEnable = true;
-	//reflectionsDSS.StencilEnable = false; Exercise 3
+	//reflectionsDSS.StencilEnable = false; //Exercise 3 and 5
 	reflectionsDSS.StencilReadMask = 0xff;
 	reflectionsDSS.StencilWriteMask = 0xff;
 
@@ -1008,6 +1009,7 @@ void StencilApp::BuildPSOs()
 	drawReflectionsPsoDesc.DepthStencilState = reflectionsDSS;
 	drawReflectionsPsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
 	drawReflectionsPsoDesc.RasterizerState.FrontCounterClockwise = true;
+	//drawReflectionsPsoDesc.RasterizerState.FrontCounterClockwise = false; // Exercise 6
 	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&drawReflectionsPsoDesc, IID_PPV_ARGS(&mPSOs["drawStencilReflections"])));
 
 	//
