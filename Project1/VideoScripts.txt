@@ -108,7 +108,7 @@ BLENDING (FINISHED)
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-STENCILING (Not finished, need to check Frank Luna sample project, finish chapter 11 reading and made stenciling exercises)
+STENCILING (FINISHED)
 . Show developed examples and technique explanation ???
 	. Planar reflections
 		. In this video we are going to talk about some stenciling techniques, such as planar reflections, that are the ones that
@@ -117,6 +117,7 @@ STENCILING (Not finished, need to check Frank Luna sample project, finish chapte
 		. To allow this to work we will need to render the reflected geometries that we want to reflect in the mirror, the skull in
 		this case, and the same with the light source, and then we will need to draw in the stencil buffer the mirror surface, 
 		so the reflected skull will only be drawn where the stencil buffer has an specific value.
+		. If we aren't using the stencil buffer, we will have an error like this (show skull behind the wall)
 	. Planar shadows
 		. Other technique that we can show that uses stenciling are planar shadows like this one, allowing us to correctly project 
 		the shadow of an object in a plane surface.
@@ -126,22 +127,59 @@ STENCILING (Not finished, need to check Frank Luna sample project, finish chapte
 		projected triangles will be overlapping and some shadow areas will be darker than others, so to prevent that error called 
 		'double blending', we use the stencil buffer to set the areas that has been currently rendered unable to render again, so
 		the complete surface of the shadow will be of the same colour.
+		. If we aren't using the stencil buffer, we will have an error like this (show 'double blending' error)
 
-. Walktrough on the code ???
-	. To use the stencil buffer we have to configure it by filling a D3D12_DEPTH_STENCIL_STATE and assign it to
-	  the DepthStencilState of the PSO
-	. As the Stencil buffer is a texture we have to create it with an specific format, such as DXGI_FORMAT_D24_UNORM_S8_UINT, where we have 24 bits 
-	  for the depth buffer and 8 for the stencil
-	. So we set this when we were to create the depth buffer
-	. The stencil buffer should be resetted at the beginning of each frame, like the depth, so we do it at the same time using the 
-	  ClearDepthStencilView method and setting the flags to do it
-	. Stencil test ???
-	. Describe Depth and stencil buffer by filling a D3D12_DEPTH_STENCIL_DESC
-	. First we set the depth parameters
-	. And later we set the stencil parameters
-	. When the D3D12_DEPTH_STENCIL_DESC is complete we need to assign it to a PSO on  the DepthStencilState field
-	. Set stencil reference value ???
+. Walktrough on the planar mirror code
+	. (Line 188) The stencil buffer is created at the same time that the depth buffer when we call the D3DApp::Initialize
+	. When we call this function the default value of both buffers is set to 0 and the format of both is set too
+	. To use the planar mirror technique, we are going to need different PSOs for different purposes
+	. (Line 953) After creating the standard opaque and transparent PSOs that we will also use, we need to create a PSO to draw the mirror
+	only in the stencil buffer, so we do it in the following way
+	. (Line 956) We create a blend state with the default values and set the rendertargetwritemask to 0
+	. (Line 959) Then we create a depth stencil descriptor, we set the depth settings and we eneable the stencil
+	and set the stencilreadmask and the stencilwritemask
+	. (Line 967) Now we need to fill the front face settings for the stencil
+	. So if the stencil or the depth fails, we keep the current value of the stencil
+	. But if the stencil passes, we replace the current value with the new one
+	. And we set always on the stencil function because we always want to compute the stencil test for this PSO
+	. (Line 973) As we are not going to render backfaces, those settings doesnt matter
+	. So we copy the opaque PSO descriptor on this new one, and set the blend state and the depth stencil state that
+	we have just created
+	. (Line 987) Now we have to create another PSO for the reflected objetcs, this will have the same settings except that
+	the depth write mask will be all instead of zero, the stencil pass for the front face will be keep, and the
+	comparison function will be equal instead of always, with these settings the reflected objects will only be drawn 
+	where the mirror has modified the value of the stencil
+	. (Line 1008) With these settings, the triangles of the reflected object will be culled on the wrong way, so we have
+	to change the cull mode of the rasterizer to BACK and set the frontcounterclockwise to true
+	. (Line 127) We will also need to store an independent render item for the reflected skull, as it needs a different world matrix
+	. (Line 414) We store it when we create the render items and later on the update we calculate its new world matrix by multipliying
+	the normal skull world matrix with the reflected mirror matrix
+	. (Line 537) And the last thing that we need is another cbv for the reflected objects with inverse lighting, so we get the main cbv
+	and multiply the light direction with the reflected mirror matrix and store them on thew reflected cbv
 
-. Walktrough on the shader ???
+	. (Line 255) Now that we have all the neccesary things, we need to take a look on the draw method
+	. (Line 276) Here we need to reset the stencil buffer at the beginning of each frame, like the depth, so we do it at the same 
+	time using the ClearDepthStencilView method and setting the flags to do it, and the values that we want to set, that are 0 for both
+	. (Line 288) Then we draw the opaque render items as always with the opaque PSO, so if any of these objects occludes a part of the 
+	mirror it won't be marked later on the stencil
+	. (Line 294) Now we are going to draw the visible mirror areas on the stencil, so we set the stencil reference value to 1 with the
+	OMSetStencilRef	method, then we change the pipeline state to the mark stencil mirror PSO that we have created before and draw the mirror
+	. (Line 300) After that, we are going to draw the actual reflected objects, so we have to switch the main cbv with the reflected one
+	to draw the objects with the inverted lights, we set the pipeline state to the draw stencil reflections and render the reflected items,
+	as we have set this PSO, the reflected objects will only be drawn where the stencil value is equal to 1
+	. (Line 305) The last step is to restore the stencil ref to 0 and set again the main pass cbv as we have finished the reflected drawing
+	. (Line 309) And finally we render the mirror with transparency to keep a percentage of the mirror color and the rest of the reflected skull
+
+. Walktrough on planar shadows
+	. The steps for the planar shadows are pretty much the same
+	. (Line  1013) First we need to create another PSO for the shadow object
+	. This one is exactly the same as the mirror stencil one, except that we need to set the stencil pass operation as Increase instead of replace
+	. With this operation, we will increase the value from 0 to 1, but if it is already one, the stencil test will fail and will leave a 1
+	in the stencil buffer, so with this we will prevent to draw multiple times on the same pixel and we will get rid of the 'double blending'
+	error
+	. (Line 419) Now that we have the PSO, as in the planar mirror example, we need to calculate the world matrix for the shadow object, 
+	so we get the normal skull world matrix and then we multiply it by a computed shadow matrix with the light direction and the shadow plane
+	. (Line 313) The final step is to draw the skull shadow with the shadows PSO, so with the stencil that we have set, no 'double
+	blending' effect will appear. 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
