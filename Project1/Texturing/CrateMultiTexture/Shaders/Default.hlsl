@@ -113,20 +113,6 @@ VertexOut VS(VertexIn vin)
 
 float4 PS(VertexOut pin) : SV_Target
 {
-
-    //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamPointWrap, pin.TexC * 0.1f) * gDiffuseAlbedo; // Figure 9.7 (Upscaled to see correctly working)
-    //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamAnisotropicWrap, pin.TexC) * gDiffuseAlbedo; // Figure 9.9 (Top face has a better view)
-    //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinearWrap, pin.TexC * 3.0f) * gDiffuseAlbedo; // Figure 9.10 (Repeating texture)
-    //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinearBorderColor, pin.TexC * 3.0f) * gDiffuseAlbedo; // Figure 9.11 (Border color)
-    //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinearClamp, pin.TexC * 3.0f) * gDiffuseAlbedo; // Figure 9.12 (Clamp)
-    //float4 diffuseAlbedo = gDiffuseMap.Sample(gsamLinearMirror, pin.TexC * 3.0f) * gDiffuseAlbedo; // Figure 9.13 (Mirror)
-
-    // Exercise 3
-    //float4 diffuseAlbedo = gTextures[0].Sample(gsamLinearWrap, pin.TexC) * gDiffuseAlbedo;
-    //float4 alpha = gTextures[1].Sample(gsamLinearWrap, pin.TexC);
-    //diffuseAlbedo = diffuseAlbedo * alpha;
-
-    // Exercise 4
     //2d rotation matrix
     float2x2 rotMatrix2D = { cos(gTotalTime), -sin(gTotalTime),
                              sin(gTotalTime), cos(gTotalTime)};
